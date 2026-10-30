@@ -1,5 +1,7 @@
 # Performance Benchmark Harness
 
+![Python tests](https://github.com/hayk79202/performance-benchmark-harness/actions/workflows/ci.yml/badge.svg)
+
 A repeatable Python benchmark runner for two small workloads: CPU arithmetic and memory allocation. It records raw timings and summary statistics as JSON so runs can be compared without inventing a performance claim.
 
 ## Run
