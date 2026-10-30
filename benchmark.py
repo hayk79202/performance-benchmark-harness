@@ -12,8 +12,10 @@ from pathlib import Path
 def run_workload(name: str, iterations: int) -> int:
     if name == "cpu":
         return sum((i * i) % 97 for i in range(iterations))
-    values = list(range(iterations))
-    return sum(values)
+    if name == "memory":
+        values = list(range(iterations))
+        return sum(values)
+    raise ValueError(f"unknown workload: {name}")
 
 
 def benchmark(name: str, iterations: int, samples: int) -> dict:
