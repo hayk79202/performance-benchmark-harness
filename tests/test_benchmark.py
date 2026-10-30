@@ -1,4 +1,9 @@
+import json
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 from benchmark import benchmark, run_workload
 from compare import compare_results
@@ -28,6 +33,24 @@ class BenchmarkTests(unittest.TestCase):
             compare_results(baseline, {**candidate, "iterations": 200})
         with self.assertRaises(ValueError):
             compare_results({**baseline, "median_seconds": 0}, candidate)
+        with self.assertRaises(ValueError):
+            compare_results({**baseline, "median_seconds": float("nan")}, candidate)
+
+    def test_compare_cli_can_fail_on_regression(self):
+        baseline = {"workload": "cpu", "iterations": 100, "median_seconds": 1.0}
+        candidate = {**baseline, "median_seconds": 1.5}
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "baseline.json"
+            second = Path(directory) / "candidate.json"
+            first.write_text(json.dumps(baseline), encoding="utf-8")
+            second.write_text(json.dumps(candidate), encoding="utf-8")
+            script = Path(__file__).resolve().parents[1] / "compare.py"
+            completed = subprocess.run(
+                [sys.executable, str(script), str(first), str(second), "--fail-above", "1.1"],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(completed.returncode, 1)
+            self.assertIn("threshold exceeded", completed.stderr)
 
 
 if __name__ == "__main__":
